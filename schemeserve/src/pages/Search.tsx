@@ -6,6 +6,7 @@ import { getPostcode, getCrimeDataPerPostcode } from "../api/apiCall";
 import { CrimeObject, Crime, TransformedCrime, NestedObject } from "../type.d";
 import SearchBar from "../components/SearchBar";
 import CrimeDataTable from "../components/CrimeDataTable";
+import MapDisplay from "../components/Map/MapDisplay";
 
 const Search = () => {
   const location = useLocation();
@@ -290,6 +291,12 @@ const Search = () => {
         crimeData={crimeData}
         loading={loading}
         iterateAndTransform={iterateAndTransform}
+      />
+      <MapDisplay
+        filteredCrimeData={filteredCrimeData}
+        crimeData={crimeData}
+        iterateAndTransform={iterateAndTransform}
+        selectedCrimeType={selectedCrimeType}
       />
     </div>
   );
