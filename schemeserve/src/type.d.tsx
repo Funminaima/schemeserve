@@ -23,3 +23,28 @@ export interface Crime {
 export interface CrimeObject {
   [postcode: string]: Crime[];
 }
+
+export interface TransformedCrime {
+  key: string;
+  Postcode: string;
+  Category: string;
+  // 'Context': string;
+  // 'ID': number;
+  Latitude: string;
+  Longitude: string;
+  // 'Street ID': number;
+  "Approximate street address": string;
+  // 'Location Subtype': string;
+  // 'Location Type': string;
+  "Date of crime": string;
+  "Outcome status": string | null;
+  // 'Outcome Date': string | null;
+  // 'Persistent ID': string;
+}
+interface NestedItem {
+  [key: string]: string;
+}
+
+export interface NestedObject {
+  [key: string]: NestedItem[];
+}

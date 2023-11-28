@@ -3,8 +3,9 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 import { getPostcode, getCrimeDataPerPostcode } from "../api/apiCall";
-import { CrimeObject, Crime } from "../type.d";
+import { CrimeObject, Crime, TransformedCrime, NestedObject } from "../type.d";
 import SearchBar from "../components/SearchBar";
+import CrimeDataTable from "../components/CrimeDataTable";
 
 const Search = () => {
   const location = useLocation();
@@ -19,7 +20,7 @@ const Search = () => {
   const [crimeDataPerPostCode, setCrimeDataPerPostCode] = useState<Crime | {}>(
     {}
   );
-
+  const [view, setView] = useState(true);
   const [storedPostCodes, setStoredPostCodes] = useState<string[]>([]);
   const [selectedCrimeType, setSelectedCrimeType] = useState<string>("");
   const [historicPostCode, setHistoricPostCode] = useState<any>(
@@ -28,6 +29,7 @@ const Search = () => {
       .filter((post: any) => post !== "")
   );
   const [filteredCrimeData, setFilteredCrimeData] = useState<CrimeObject[]>([]);
+
   useEffect(() => {
     if (initialPostcodes) {
       fetchData(historicPostCode);
@@ -185,6 +187,87 @@ const Search = () => {
 
     setCrimeData([]);
   };
+
+  const filteredCrimeDataFn = (
+    // icrimeData: NestedObject[],
+    crimeType: string
+  ) => {
+    const filteredCrimeData: CrimeObject[] = crimeData
+      .map((obj: CrimeObject) => {
+        const filteredNestedArray = Object.entries(obj).reduce(
+          (acc: any, [key, nestedArray]: any) => {
+            const filteredArray = nestedArray.filter(
+              (item: Crime) => item.category === crimeType
+            );
+            if (filteredArray.length > 0) {
+              acc[key] = filteredArray;
+            }
+            return acc;
+          },
+          {}
+        );
+        return Object.keys(filteredNestedArray).length > 0
+          ? filteredNestedArray
+          : null;
+      })
+      .filter(Boolean);
+    setFilteredCrimeData(filteredCrimeData);
+  };
+
+  const convertToSingleArray = () => {
+    if (crimeData.length > 0) {
+      const combinedArray = crimeData.flatMap(
+        (obj: any) => Object.values(obj)[0]
+      );
+      return combinedArray;
+    } else {
+      return [];
+    }
+  };
+  convertToSingleArray();
+  const crimeTypes: string[] = convertToSingleArray()
+    ? Array.from(
+        new Set(convertToSingleArray().map((crime: any) => crime.category))
+      )
+    : [];
+
+  const onChangeCrimeTypes = (value: string) => {
+    setSelectedCrimeType(value);
+    filteredCrimeDataFn(value);
+    console.log("hello inside onchange");
+  };
+  const iterateAndTransform = (
+    crimeData: CrimeObject[]
+  ): TransformedCrime[] => {
+    const result: TransformedCrime[] = [];
+
+    for (const crimeObject of crimeData) {
+      for (const [postcode, crimeArray] of Object.entries(crimeObject)) {
+        for (const crime of crimeArray) {
+          const transformedCrime: TransformedCrime = {
+            key: `${Math.random().toString(36).substr(2, 32)}`,
+            Postcode: postcode,
+            "Date of crime": crime.month,
+            "Approximate street address":
+              crime.location && crime.location.street
+                ? crime.location.street.name
+                : "N/A",
+            "Outcome status": crime.outcome_status?.category || "On Going",
+            Latitude: crime.location.latitude,
+            Longitude: crime.location.longitude,
+            Category: crime.category,
+          };
+
+          result.push(transformedCrime);
+        }
+      }
+    }
+    return result;
+  };
+
+  const clickButtonView = () => {
+    setView(!view);
+  };
   return (
     <div>
       <SearchBar
@@ -195,6 +278,18 @@ const Search = () => {
         handleRemovePostCode={handleRemovePostCode}
         historicPostCode={historicPostCode}
         crimeDataPerPostCode={crimeDataPerPostCode}
+      />
+      <CrimeDataTable
+        clickButtonView={clickButtonView}
+        view={view}
+        crimeTypes={crimeTypes}
+        filteredCrimeData={filteredCrimeData}
+        onChangeCrimeTypes={onChangeCrimeTypes}
+        crimeDataPerPostCode={crimeDataPerPostCode}
+        selectedCrimeType={selectedCrimeType}
+        crimeData={crimeData}
+        loading={loading}
+        iterateAndTransform={iterateAndTransform}
       />
     </div>
   );
