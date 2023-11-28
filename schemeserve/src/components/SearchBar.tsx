@@ -28,24 +28,26 @@ const SearchBar = ({
   crimeDataPerPostCode,
 }: SearchBarProps) => {
   const renderTitle = (title: string) => (
-    <div className="display-flex">
-      {title}
-      <Tag
-        icon={<EyeOutlined />}
-        color="blue"
-        onClick={() => handlePostCodeClick(title, crimeDataPerPostCode)}
-        style={{ cursor: "pointer" }}
-      >
-        View
-      </Tag>
-      <Tag
-        icon={<EyeOutlined />}
-        color="blue"
-        onClick={() => handleRemovePostCode(title)}
-        style={{ cursor: "pointer" }}
-      >
-        Remove
-      </Tag>
+    <div className="d-flex">
+      <div>{title}</div>
+      <div>
+        <Tag
+          icon={<EyeOutlined />}
+          color="blue"
+          onClick={() => handlePostCodeClick(title, crimeDataPerPostCode)}
+          style={{ cursor: "pointer" }}
+        >
+          View
+        </Tag>
+        <Tag
+          icon={<CloseCircleOutlined />}
+          color="red"
+          onClick={() => handleRemovePostCode(title)}
+          style={{ cursor: "pointer" }}
+        >
+          Remove
+        </Tag>
+      </div>
     </div>
   );
 
@@ -59,7 +61,7 @@ const SearchBar = ({
         <Col span={12}>
           <AutoComplete
             style={{ width: "100%" }}
-            popupMatchSelectWidth={500}
+            popupMatchSelectWidth={900}
             options={options}
           >
             <Input.Search

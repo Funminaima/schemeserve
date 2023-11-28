@@ -161,6 +161,7 @@ const Search = () => {
   ) => {
     try {
       setLoading(true);
+      setPostcode(selectedPostcode);
       fetchData([selectedPostcode]);
 
       const response = await axios.get(

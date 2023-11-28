@@ -50,7 +50,7 @@ const MapDisplay: React.FC<CrimeMapProps> = ({
 }) => {
   const data = selectedCrimeType === "" ? crimeData : filteredCrimeData;
   const mapData: TransformedCrime[] = iterateAndTransform(data);
-  const firstCrime: any = mapData ? mapData[0] : [];
+  const firstCrime: any = mapData.length > 0 ? mapData[0] : [];
   const initialCenter: [number, number] = [
     firstCrime?.Latitude,
     firstCrime?.Longitude,
@@ -62,7 +62,7 @@ const MapDisplay: React.FC<CrimeMapProps> = ({
   const mapContainerProps = {
     center: mapData.length > 0 ? firstCrime : [51.505, -0.09],
     zoom: 6,
-    style: { height: "600px", width: "100%" }, // Map container style
+    Style: { height: "400px", width: "100%" },
   };
 
   return (
@@ -82,7 +82,6 @@ const MapDisplay: React.FC<CrimeMapProps> = ({
           </Marker>
         ))}
     </MapContainer>
-
     //     <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false}>
     //   <TileLayer
     //     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

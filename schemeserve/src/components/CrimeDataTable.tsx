@@ -68,7 +68,8 @@ const CrimeDataTable = ({
               <Select
                 value={selectedCrimeType}
                 onChange={onChangeCrimeTypes}
-                style={{ width: 200 }}
+                style={{ width: 400 }}
+                size={"large"}
               >
                 <Option value="">All</Option>
                 {crimeTypes.map((type: string, id: number) => (
@@ -79,8 +80,8 @@ const CrimeDataTable = ({
               </Select>
             </div>
             <div>
-              <Button type="primary" size={"large"}>
-                {view ? "Table View" : "Map View"}
+              <Button type="primary" size={"large"} onClick={clickButtonView}>
+                {view ? "Map View" : "Table View"}
               </Button>
             </div>
           </div>

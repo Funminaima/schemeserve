@@ -1,0 +1,46 @@
+:root {
+  line-height: 1.5;
+  font-weight: 400;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: Black;
+  background-color: #fdfdfd;
+}
+
+.layout {
+  width: 850px;
+  height: 100vh;
+  margin: 0 auto;
+  display: grid;
+  grid: auto 1fr auto;
+  gap: 8px;
+}
+.title {
+  text-align: center;
+}
+.ant-select-selector {
+  border: 1px solid red;
+  margin-left: 5opx;
+  width: 900px;
+}
+.crime-display {
+  margin: 10px;
+}
+.d-flex {
+  display: flex;
+  justify-content: space-between;
+}
+.map-style {
+  margin-top: 30px;
+  height: 500px;
+  width: 100px;
+}
