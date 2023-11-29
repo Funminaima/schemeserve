@@ -26,11 +26,7 @@ const Search = () => {
   const [view, setView] = useState(true);
   const [storedPostCodes, setStoredPostCodes] = useState<string[]>([]);
   const [selectedCrimeType, setSelectedCrimeType] = useState<string>("");
-  const [historicPostCode, setHistoricPostCode] = useState<any>(
-    decodeURIComponent(initialPostcodes)
-      .split("&")
-      .filter((post: any) => post !== "")
-  );
+  const [historicPostCode, setHistoricPostCode] = useState<any>([]);
   const [filteredCrimeData, setFilteredCrimeData] = useState<CrimeObject[]>([]);
 
   useEffect(() => {
@@ -39,23 +35,18 @@ const Search = () => {
       SetError("");
     }
 
-    const storedPostCodes = localStorage.getItem("searchedPostCodes");
-    if (storedPostCodes) {
-      storedPostCode(JSON.parse(storedPostCodes));
-      fetchData(JSON.parse(storedPostCodes));
+    const storedPostCodeLocal = localStorage.getItem("searchedPostCodes");
+    if (storedPostCodeLocal) {
+      storedPostCode(JSON.parse(storedPostCodeLocal));
+      fetchData(JSON.parse(storedPostCodeLocal));
       SetError("");
     }
 
     return () => {};
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("searchedPostCodes", JSON.stringify(historicPostCode));
-  }, [historicPostCode]);
-
   const storedPostCode = (postCodes: []) => {
     setHistoricPostCode(postCodes);
-    localStorage.setItem("searchedPostCodes", JSON.stringify(historicPostCode));
   };
 
   const getSingleData = async (selectedPostCodes: string[]) => {
@@ -185,20 +176,14 @@ const Search = () => {
   };
   const handlePostCodeClick = async (
     selectedPostcode: string,
-    crimeDataPerPostCode: Crime
+    value: string
   ) => {
     try {
       setLoading(true);
       setPostcode(selectedPostcode);
       fetchData([selectedPostcode]);
 
-      const response = await axios.get(
-        `https://data.police.uk/api/crimes-street/all-crime?lat=${crimeDataPerPostCode}&lng=${crimeDataPerPostCode}`
-      );
-      setCrimeData(response.data);
-
-      const newQueryString = historicPostCode.join(",");
-      window.history.pushState({}, "", `/?postcodes=${newQueryString}`);
+      window.history.pushState({}, "", `/?postcodes=${selectedPostcode}`);
     } catch (error) {
       console.error("Error fetching crime data for selected postcode:", error);
     } finally {

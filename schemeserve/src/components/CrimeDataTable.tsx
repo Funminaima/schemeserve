@@ -53,7 +53,6 @@ const CrimeDataTable = ({
   view,
 }: Props) => {
   const storedPostCodes = localStorage.getItem("searchedPostCodes");
-
   const data = selectedCrimeType === "" ? crimeData : filteredCrimeData;
   const transformedData = iterateAndTransform(data);
 

@@ -9,10 +9,7 @@ interface SearchBarProps {
   handleSearch: (value: string) => void;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   postCode: string;
-  handlePostCodeClick: (
-    selectedPostcode: string,
-    crimeDataPerPostCode: Crime
-  ) => void;
+  handlePostCodeClick: (selectedPostcode: string, postcode: string) => void;
   handleRemovePostCode: (postcode: string) => void;
   historicPostCode: [];
   crimeDataPerPostCode: any;
@@ -34,7 +31,7 @@ const SearchBar = ({
         <Tag
           icon={<EyeOutlined />}
           color="blue"
-          onClick={() => handlePostCodeClick(title, crimeDataPerPostCode)}
+          onClick={() => handlePostCodeClick(title, postCode)}
           style={{ cursor: "pointer" }}
         >
           View
@@ -52,6 +49,7 @@ const SearchBar = ({
   );
 
   const options = historicPostCode.map((search: any) => ({
+    value: search,
     label: renderTitle(search),
   }));
 
