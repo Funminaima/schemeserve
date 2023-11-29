@@ -13,17 +13,9 @@
 
   color-scheme: light dark;
   color: Black;
-  background-color: #fdfdfd;
+  background-color: #f0f0f0;
 }
 
-.layout {
-  width: 850px;
-  height: 100vh;
-  margin: 0 auto;
-  display: grid;
-  grid: auto 1fr auto;
-  gap: 8px;
-}
 .title {
   text-align: center;
 }
@@ -39,8 +31,17 @@
   display: flex;
   justify-content: space-between;
 }
-.map-style {
-  margin-top: 30px;
-  height: 500px;
-  width: 100px;
+.map p {
+  font-weight: 500;
+}
+
+.map-title {
+  width: 900px;
+}
+
+.map-title h2 {
+  text-align: center;
+}
+.error {
+  color: red;
 }

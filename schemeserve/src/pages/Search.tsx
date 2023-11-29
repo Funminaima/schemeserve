@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
+import "leaflet/dist/leaflet.css";
+import { Button } from "antd";
 
 import { getPostcode, getCrimeDataPerPostcode } from "../api/apiCall";
 import { CrimeObject, Crime, TransformedCrime, NestedObject } from "../type.d";
 import SearchBar from "../components/SearchBar";
 import CrimeDataTable from "../components/CrimeDataTable";
-import MapDisplay from "../components/Map/MapDisplay";
+import { isValidPostcode } from "../helper";
 
 const Search = () => {
   const location = useLocation();
@@ -34,15 +36,28 @@ const Search = () => {
   useEffect(() => {
     if (initialPostcodes) {
       fetchData(historicPostCode);
-      console.log("me inside useEffect 1");
+      SetError("");
     }
+
     const storedPostCodes = localStorage.getItem("searchedPostCodes");
     if (storedPostCodes) {
-      setStoredPostCodes(JSON.parse(storedPostCodes));
+      storedPostCode(JSON.parse(storedPostCodes));
+      fetchData(JSON.parse(storedPostCodes));
+      SetError("");
+      console.log(storedPostCode, "stored post code");
     }
 
     return () => {};
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("searchedPostCodes", JSON.stringify(historicPostCode));
+  }, [historicPostCode]);
+
+  const storedPostCode = (postCodes: []) => {
+    setHistoricPostCode(postCodes);
+    localStorage.setItem("searchedPostCodes", JSON.stringify(historicPostCode));
+  };
 
   const getSingleData = async (selectedPostCodes: string[]) => {
     const result: CrimeObject[] = [];
@@ -56,6 +71,7 @@ const Search = () => {
       if (response.error) {
         SetError(response.error);
       } else {
+        SetError("");
         setCrimeDataPerPostCode(response.data);
 
         const crimeResponse = await getCrimeDataPerPostcode(
@@ -70,6 +86,7 @@ const Search = () => {
       SetError("An error occurred while fetching data.");
     } finally {
       setLoading(false);
+      // SetError("");
     }
 
     setCrimeData(result);
@@ -88,6 +105,7 @@ const Search = () => {
           if (response.error) {
             console.error("Error fetching postcodes:", response.error);
           } else {
+            SetError("");
             const crimeResponse = await getCrimeDataPerPostcode(
               response.data.latitude,
               response.data.longitude
@@ -138,22 +156,37 @@ const Search = () => {
       "searchedPostCodes",
       JSON.stringify(nonEmptyPostcodes)
     );
-
-    // Update the query string only if there are non-empty postcodes
-    if (nonEmptyPostcodes.length > 0) {
-      const newQueryString = nonEmptyPostcodes.join("&");
-      // historicPostCode.forEach((postcode:any) => queryParams.append('postcode', postcode));
-      window.history.pushState({}, "", `/?postcodes=${newQueryString}`);
-      fetchData(nonEmptyPostcodes);
+    const isValidPostcodes = await Promise.all(
+      nonEmptyPostcodes.map(isValidPostcode)
+    );
+    if (!isValidPostcodes[isValidPostcode.length - 1]) {
+      SetError("Invalid postcode detected");
+    } else {
+      SetError("");
     }
 
-    console.log(nonEmptyPostcodes, "nonEmptyPostcode nonEmptyPostcode");
+    if (
+      nonEmptyPostcodes.length > 0 &&
+      isValidPostcodes[isValidPostcodes.length - 1] === true
+    ) {
+      // const newQueryString = nonEmptyPostcodes.join("&");
+      const newQuery = nonEmptyPostcodes.filter(
+        (_, index) => isValidPostcodes[index]
+      );
+      console.log(newQuery, "nonEmptyPostcode nonEmptyPostcode");
+      const newQueryString = newQuery.join("&");
+      // historicPostCode.forEach((postcode:any) => queryParams.append('postcode', postcode));
+      window.history.pushState({}, "", `/?postcodes=${newQueryString}`);
+      fetchData(newQuery);
+      SetError("");
+    }
   };
 
   const handlechange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPostcode(e.target.value.trim());
     console.log(e.target.value, "target");
     setLoading(false);
+    SetError("");
   };
   const handlePostCodeClick = async (
     selectedPostcode: string,
@@ -183,11 +216,9 @@ const Search = () => {
       (postcode: any) => postcode !== removedPostCode
     );
     setHistoricPostCode(updatedPostCodes);
-    const newQueryString = updatedPostCodes.join(",");
+    const newQueryString = updatedPostCodes.join("&");
     window.history.pushState({}, "", `/?postcodes=${newQueryString}`);
     localStorage.setItem("searchedPostCodes", JSON.stringify(updatedPostCodes));
-
-    setCrimeData([]);
   };
 
   const filteredCrimeDataFn = (
@@ -238,40 +269,17 @@ const Search = () => {
     filteredCrimeDataFn(value);
     console.log("hello inside onchange");
   };
-  const iterateAndTransform = (
-    crimeData: CrimeObject[]
-  ): TransformedCrime[] => {
-    const result: TransformedCrime[] = [];
-
-    for (const crimeObject of crimeData) {
-      for (const [postcode, crimeArray] of Object.entries(crimeObject)) {
-        for (const crime of crimeArray) {
-          const transformedCrime: TransformedCrime = {
-            key: `${Math.random().toString(36).substr(2, 32)}`,
-            Postcode: postcode,
-            "Date of crime": crime.month,
-            "Approximate street address":
-              crime.location && crime.location.street
-                ? crime.location.street.name
-                : "N/A",
-            "Outcome status": crime.outcome_status?.category || "On Going",
-            Latitude: crime.location.latitude,
-            Longitude: crime.location.longitude,
-            Category: crime.category,
-          };
-
-          result.push(transformedCrime);
-        }
-      }
-    }
-    return result;
-  };
+  // console.log(Error, "page error display");
 
   const clickButtonView = () => {
     setView(!view);
   };
   return (
-    <div>
+    <div className="layout">
+      <div className="title">
+        <h3>Simple App to get Crime Data based on post code</h3>
+      </div>
+      {Error && <div className="error-message">{Error}</div>}
       <SearchBar
         handleSearch={handleSearch}
         handleChange={handlechange}
@@ -281,24 +289,29 @@ const Search = () => {
         historicPostCode={historicPostCode}
         crimeDataPerPostCode={crimeDataPerPostCode}
       />
-      <CrimeDataTable
-        clickButtonView={clickButtonView}
-        view={view}
-        crimeTypes={crimeTypes}
-        filteredCrimeData={filteredCrimeData}
-        onChangeCrimeTypes={onChangeCrimeTypes}
-        crimeDataPerPostCode={crimeDataPerPostCode}
-        selectedCrimeType={selectedCrimeType}
-        crimeData={crimeData}
-        loading={loading}
-        iterateAndTransform={iterateAndTransform}
-      />
-      <MapDisplay
-        filteredCrimeData={filteredCrimeData}
-        crimeData={crimeData}
-        iterateAndTransform={iterateAndTransform}
-        selectedCrimeType={selectedCrimeType}
-      />
+
+      <div>
+        <CrimeDataTable
+          clickButtonView={clickButtonView}
+          view={view}
+          crimeTypes={crimeTypes}
+          filteredCrimeData={filteredCrimeData}
+          onChangeCrimeTypes={onChangeCrimeTypes}
+          crimeDataPerPostCode={crimeDataPerPostCode}
+          selectedCrimeType={selectedCrimeType}
+          crimeData={crimeData}
+          loading={loading}
+          // iterateAndTransform={iterateAndTransform}
+        />
+      </div>
+      <div className={`table-view ${!view ? "show" : ""}`}>
+        {/* <MapDisplay
+          filteredCrimeData={filteredCrimeData}
+          crimeData={crimeData}
+          iterateAndTransform={iterateAndTransform}
+          selectedCrimeType={selectedCrimeType}
+        /> */}
+      </div>
     </div>
   );
 };

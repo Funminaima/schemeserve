@@ -1,7 +1,9 @@
 import React from "react";
 import { Select, Table, Button, Skeleton } from "antd";
+import { Link } from "react-router-dom";
 
 import { Crime, CrimeObject, TransformedCrime } from "../type.d";
+import { iterateAndTransform } from "../helper";
 
 interface Props {
   crimeTypes: string[];
@@ -11,7 +13,6 @@ interface Props {
   selectedCrimeType: string;
   crimeData: CrimeObject[];
   loading: boolean;
-  iterateAndTransform: (crimeData: CrimeObject[]) => TransformedCrime[];
   clickButtonView: () => void;
   view: boolean;
 }
@@ -48,13 +49,20 @@ const CrimeDataTable = ({
   selectedCrimeType,
   crimeData,
   loading,
-  iterateAndTransform,
   clickButtonView,
   view,
 }: Props) => {
+  const storedPostCodes = localStorage.getItem("searchedPostCodes");
+
   const data = selectedCrimeType === "" ? crimeData : filteredCrimeData;
   const transformedData = iterateAndTransform(data);
 
+  const stateObject = {
+    filteredCrimeData,
+    crimeData,
+    // iterateAndTransform,
+    selectedCrimeType,
+  };
   return (
     <div className="TableDisplay">
       {loading ? (
@@ -80,9 +88,18 @@ const CrimeDataTable = ({
               </Select>
             </div>
             <div>
-              <Button type="primary" size={"large"} onClick={clickButtonView}>
-                {view ? "Map View" : "Table View"}
-              </Button>
+              <Link
+                to={`/map?postcodes=${
+                  storedPostCodes !== null
+                    ? JSON.parse(storedPostCodes).join("&")
+                    : ""
+                }`}
+                state={{ stateObject }}
+              >
+                <Button type="primary" size="large" onClick={clickButtonView}>
+                  {view ? "Map View" : "Table View"}
+                </Button>
+              </Link>
             </div>
           </div>
           <div>
