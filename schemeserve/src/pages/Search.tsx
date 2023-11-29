@@ -44,7 +44,6 @@ const Search = () => {
       storedPostCode(JSON.parse(storedPostCodes));
       fetchData(JSON.parse(storedPostCodes));
       SetError("");
-      console.log(storedPostCode, "stored post code");
     }
 
     return () => {};
@@ -86,7 +85,7 @@ const Search = () => {
       SetError("An error occurred while fetching data.");
     } finally {
       setLoading(false);
-      // SetError("");
+      SetError("");
     }
 
     setCrimeData(result);
@@ -131,18 +130,15 @@ const Search = () => {
   };
 
   const fetchData = async (selectedPostCode: string[]) => {
-    console.log(selectedPostCode, "selected post code fetch data");
     if (postcode.includes(",")) {
       getMultipleData(selectedPostCode);
     } else {
       getSingleData(selectedPostCode);
     }
-    console.log(selectedPostCode, "selectedPostCode");
   };
 
   const handleSearch = async (value?: string) => {
-    const splitValue = value?.trim().split(",");
-
+    const splitValue = value?.split(" ").join("").split(",");
     const uniqueHistoricPostCode = Array.from(
       new Set<string>([...historicPostCode, splitValue].flat())
     );
@@ -173,7 +169,7 @@ const Search = () => {
       const newQuery = nonEmptyPostcodes.filter(
         (_, index) => isValidPostcodes[index]
       );
-      console.log(newQuery, "nonEmptyPostcode nonEmptyPostcode");
+
       const newQueryString = newQuery.join("&");
       // historicPostCode.forEach((postcode:any) => queryParams.append('postcode', postcode));
       window.history.pushState({}, "", `/?postcodes=${newQueryString}`);
@@ -183,8 +179,7 @@ const Search = () => {
   };
 
   const handlechange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPostcode(e.target.value.trim());
-    console.log(e.target.value, "target");
+    setPostcode(e.target.value);
     setLoading(false);
     SetError("");
   };
@@ -267,9 +262,7 @@ const Search = () => {
   const onChangeCrimeTypes = (value: string) => {
     setSelectedCrimeType(value);
     filteredCrimeDataFn(value);
-    console.log("hello inside onchange");
   };
-  // console.log(Error, "page error display");
 
   const clickButtonView = () => {
     setView(!view);
@@ -277,7 +270,7 @@ const Search = () => {
   return (
     <div className="layout">
       <div className="title">
-        <h3>Simple App to get Crime Data based on post code</h3>
+        <h2>Get Crime Data based on post code</h2>
       </div>
       {Error && <div className="error-message">{Error}</div>}
       <SearchBar
@@ -301,16 +294,7 @@ const Search = () => {
           selectedCrimeType={selectedCrimeType}
           crimeData={crimeData}
           loading={loading}
-          // iterateAndTransform={iterateAndTransform}
         />
-      </div>
-      <div className={`table-view ${!view ? "show" : ""}`}>
-        {/* <MapDisplay
-          filteredCrimeData={filteredCrimeData}
-          crimeData={crimeData}
-          iterateAndTransform={iterateAndTransform}
-          selectedCrimeType={selectedCrimeType}
-        /> */}
       </div>
     </div>
   );
