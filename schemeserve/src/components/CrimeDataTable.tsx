@@ -106,7 +106,10 @@ const CrimeDataTable = ({
             <h3>
               {selectedCrimeType === ""
                 ? "All Crimes"
-                : `${selectedCrimeType} Crimes`}
+                : `${
+                    selectedCrimeType.charAt(0).toUpperCase() +
+                    selectedCrimeType.slice(1)
+                  } Crimes`}
             </h3>
             <Table
               dataSource={transformedData}
